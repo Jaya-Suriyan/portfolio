@@ -16,7 +16,12 @@ Other scripts: `npm run build`, `npm start`, `npm run lint`.
 
 All text lives in [`src/data/profile.ts`](src/data/profile.ts): profile, experience, projects, skills, education and certifications. Change that file and the site updates. No component changes are needed.
 
-- **Projects:** set `featured: true` on a project to show it as the large card. Add a `pipeline` array to draw its step diagram.
+- **Projects:** set `featured: true` on a project to show it as a large card. Optional fields:
+  - `pipeline`: draws a step diagram.
+  - `parts`: lists the apps inside a bigger product, as for Feasto.
+  - `role`: your part in a team project.
+  - `status`: a label such as "In progress".
+  - `repoPrivate: true`: shows "Private repository" in place of source links.
 - **Email:** `profile.email` is shown on the page. Set it to `""` to hide it.
 
 ## Contact form

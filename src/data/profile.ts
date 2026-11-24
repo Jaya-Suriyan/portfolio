@@ -2,8 +2,7 @@
  * All portfolio content lives in this file. Edit it to update the site.
  *
  * Sources: the résumé (summary, experience, skills, education, contact), the
- * public LinkedIn profile (certifications) and the public GitHub repositories
- * (personal projects).
+ * public LinkedIn profile (certifications) and the project repositories.
  */
 
 export type Link = { label: string; href: string };
@@ -27,6 +26,15 @@ export type Experience = {
   highlights?: string[];
 };
 
+/** One app or service inside a larger product. */
+export type ProjectPart = {
+  name: string;
+  kind: string;
+  description: string;
+  stack: string[];
+  links?: Link[];
+};
+
 export type Project = {
   slug: string;
   name: string;
@@ -36,8 +44,17 @@ export type Project = {
   stack: string[];
   links: Link[];
   featured?: boolean;
-  /** Optional step-by-step pipeline drawn as a small diagram on the featured project. */
+  /** Shown when the source code can't be linked. */
+  repoPrivate?: boolean;
+  /** e.g. "In progress". */
+  status?: string;
+  period?: string;
+  /** Your part in a team project. */
+  role?: string;
+  /** Optional step-by-step pipeline drawn as a small diagram. */
   pipeline?: string[];
+  /** Apps and services that make up a larger product. */
+  parts?: ProjectPart[];
 };
 
 export type SkillGroup = { label: string; items: string[] };
@@ -61,7 +78,7 @@ export const profile = {
   about: [
     "I'm a full stack developer with 7+ years of experience designing, building and deploying enterprise web applications on the MERN and PERN stacks. I've delivered features end to end, from the UI through REST APIs and databases to the cloud, for global clients such as Eli Lilly and Tata Consumer Products.",
     "As a Senior Software Engineer at Virtusa, I'm building Generative AI applications with Python and LangChain. One of them is an LLM-powered checker that reviews research papers against company compliance policies and drafts corrections for authors.",
-    "Outside work I build and run my own products: a music streaming app with adaptive streaming and offline playback, restaurant management systems, and the deployment tooling that runs them on my own servers.",
+    "Beyond client work I build products. Feasto is a restaurant ordering platform with web, point-of-sale and mobile apps, which restaurants run under their own brand. I've also built a music streaming app with adaptive streaming and offline playback, and I'm building OpsPlane, a control plane for running many client deployments and in-store devices from one place.",
   ],
   spokenLanguages: ["English", "Tamil"],
   email: "jaisuriyan97@gmail.com",
@@ -152,6 +169,74 @@ export const experience: Experience[] = [
 
 export const projects: Project[] = [
   {
+    slug: "feasto",
+    name: "Feasto",
+    tagline: "Restaurant ordering platform that runs under each restaurant's own brand",
+    description:
+      "Online ordering, table QR ordering, table booking, marketing and rewards for restaurants. Each restaurant gets its own branded instance, run by one API and served through web, point-of-sale and mobile apps.",
+    role: "Main contributor to the API and both web apps, and sole developer of the two mobile apps.",
+    period: "2025 – present",
+    highlights: [
+      "Live orders reach the admin dashboard, the POS and the owner's phone over Socket.IO. Customers get ETA and status emails through AWS SES.",
+      "Stripe payments into each restaurant's Stripe Express account, with per-restaurant card statement and payout descriptors.",
+      "Role-based access control across web and mobile, staff who work across several branches, and activity logs.",
+      "Allergen management for UK and EU food law, and menu items with dependent options and validation rules.",
+      "Interfaces in English, Tamil, Malayalam, and right-to-left Arabic and Urdu.",
+    ],
+    stack: [],
+    links: [{ label: "feasto.co.uk", href: "https://feasto.co.uk" }],
+    featured: true,
+    parts: [
+      {
+        name: "Restaurant API",
+        kind: "Backend",
+        description:
+          "Serves every app: orders, menus, branches, reservations, loyalty, payments, reports and access control across about 40 route modules, plus scheduled jobs and S3 file storage.",
+        stack: ["Node.js", "Express", "MongoDB", "Socket.IO", "Stripe", "AWS S3", "AWS SES"],
+      },
+      {
+        name: "Customer ordering site",
+        kind: "Web app for customers",
+        description:
+          "Menu, cart and Stripe checkout, table QR ordering, live order tracking, loyalty perks and a page builder for the restaurant's own website. An Express server adds SEO metadata to each page.",
+        stack: ["React", "TypeScript", "Vite", "TanStack Query", "Stripe", "Google Maps", "i18next"],
+      },
+      {
+        name: "Admin dashboard",
+        kind: "Web app for staff",
+        description:
+          "Back office for live orders with a tracking timeline, a menu editor with option rules, branches, staff roles, reports with PDF, Excel and CSV export, allergens, SEO and POS device setup.",
+        stack: ["Next.js 14", "TypeScript", "Tailwind CSS", "Radix UI", "Recharts", "Socket.IO"],
+        links: [{ label: "Early version", href: "https://github.com/Jaya-Suriyan/Restaurent-System-React" }],
+      },
+      {
+        name: "FeastoPOS",
+        kind: "Point-of-sale app",
+        description:
+          "Runs on Sunmi POS terminals. Alerts staff to new orders with a looping sound, prints receipts on the built-in printer, and connects to a restaurant's server by scanning a QR code.",
+        stack: ["React Native", "TypeScript", "Socket.IO", "Sunmi printer SDK"],
+      },
+      {
+        name: "FeastoAdmin",
+        kind: "Owner app · iOS & Android",
+        description:
+          "One build serves every restaurant. The owner scans a QR code from the admin dashboard to connect, then handles live orders, opening hours and stock, and checks reports. Supports biometric app lock.",
+        stack: ["Flutter", "Dart", "Socket.IO", "fl_chart"],
+      },
+      {
+        name: "Deployment tooling",
+        kind: "Operations",
+        description:
+          "Sets up each restaurant's instance on a shared server, with its own PM2 processes and Nginx config, and deploys updates through a token-protected webhook.",
+        stack: ["Bash", "Nginx", "PM2", "Node.js", "Express"],
+        links: [
+          { label: "Provisioning", href: "https://github.com/Jaya-Suriyan/feasto-deploy-setup" },
+          { label: "Deploy server", href: "https://github.com/Jaya-Suriyan/node-cicd" },
+        ],
+      },
+    ],
+  },
+  {
     slug: "media-player-classic",
     name: "Media Player Classic",
     tagline: "A music streaming app that keeps playing on slow connections",
@@ -170,62 +255,21 @@ export const projects: Project[] = [
     pipeline: ["Upload", "ffmpeg", "HLS 48 / 96 / 160k", "S3 · R2 · disk", "Player"],
   },
   {
-    slug: "restroman",
-    name: "Restroman UK",
-    tagline: "Restaurant management dashboard",
+    slug: "opsplane",
+    name: "OpsPlane",
+    tagline: "Control plane for running many client deployments and in-store devices",
     description:
-      "Back-office dashboard for running restaurants across branches, from taking orders at the counter to reporting on sales.",
+      "One place to operate every client deployment: push environment settings, manage processes and maintenance scripts on each client's server, stream logs to the browser, and remotely support in-store Android POS devices.",
+    status: "In progress",
+    repoPrivate: true,
     highlights: [
-      "Point-of-sale screen, order tracking and table reservations.",
-      "Catalogue management for products, brands, units, add-ons and discounts, plus promotions and content.",
-      "Branch, user and transaction management with reporting and analytics charts.",
+      "Secrets encrypted with AES-256-GCM and bound to their record and field, with a rotatable keyring kept outside the database.",
+      "Server operations without free-form shell commands: pinned SSH host keys, validated and escaped arguments, a registry of approved scripts, and .env files written atomically over SFTP.",
+      "Remote support for Sunmi POS devices through a Kotlin agent: screen sharing over WebRTC, touch input, on-device consent and short-lived TURN credentials.",
+      "Append-only, hash-chained audit log with secrets redacted. Operators sign in with mandatory TOTP two-factor authentication.",
     ],
-    stack: ["Next.js 14", "React", "TypeScript", "Tailwind CSS", "Recharts"],
-    links: [{ label: "Source", href: "https://github.com/Jaya-Suriyan/Restaurent-System-React" }],
-  },
-  {
-    slug: "feasto-deploy",
-    name: "Feasto deployment tooling",
-    tagline: "Multi-tenant provisioning and push-to-deploy",
-    description:
-      "Scripts and a small deploy server that set up and update a separate instance of a restaurant platform for each customer on a self-managed server.",
-    highlights: [
-      "Interactive script generates each customer's PM2 setup (user app, admin app and API) and their Nginx reverse-proxy configuration.",
-      "Token-protected deploy webhook that pulls, builds and restarts the right app on request.",
-    ],
-    stack: ["Bash", "Nginx", "PM2", "Node.js", "Express"],
-    links: [
-      { label: "Provisioning", href: "https://github.com/Jaya-Suriyan/feasto-deploy-setup" },
-      { label: "Deploy server", href: "https://github.com/Jaya-Suriyan/node-cicd" },
-    ],
-  },
-  {
-    slug: "earney",
-    name: "Earney Projects Manager",
-    tagline: "Project management app on Supabase",
-    description: "A project and team tracking app with a typed data layer and an accessible component library.",
-    highlights: [
-      "Supabase (Postgres) backend with TanStack Query for caching and syncing data.",
-      "Forms validated with React Hook Form and Zod. UI built on Radix primitives, with charts in Recharts.",
-    ],
-    stack: ["React", "TypeScript", "Vite", "Supabase", "TanStack Query", "Zod", "Radix UI"],
-    links: [{ label: "Source", href: "https://github.com/Jaya-Suriyan/earney-project-manager" }],
-  },
-  {
-    slug: "ic",
-    name: "IC Product Catalogue",
-    tagline: "Full stack CRUD app with JWT authentication",
-    description: "REST API and web front end for managing a product catalogue, both deployed on Vercel.",
-    highlights: [
-      "Express API on PostgreSQL with Sequelize migrations and seed data, JWT sign-in and bcrypt-hashed passwords.",
-      "Next.js front end built with Ant Design.",
-    ],
-    stack: ["Node.js", "Express", "PostgreSQL", "Sequelize", "JWT", "Next.js", "Ant Design"],
-    links: [
-      { label: "Live", href: "https://ic-react.vercel.app" },
-      { label: "API source", href: "https://github.com/Jaya-Suriyan/ic-node" },
-      { label: "App source", href: "https://github.com/Jaya-Suriyan/ic-react" },
-    ],
+    stack: ["TypeScript", "Node.js", "Express", "MongoDB", "WebSockets", "WebRTC", "Kotlin", "pnpm workspaces", "Docker"],
+    links: [],
   },
 ];
 
@@ -238,9 +282,10 @@ export const skills: SkillGroup[] = [
     label: "Frontend",
     items: ["React", "Next.js", "Nx", "Vue.js", "TypeScript", "JavaScript (ES6+)", "Tailwind CSS", "HTML5", "CSS3", "PWA"],
   },
+  { label: "Mobile", items: ["React Native", "Flutter", "Dart"] },
   {
     label: "Backend",
-    items: ["Node.js", "Express", "NestJS", "Fastify", "Python", "REST APIs", "Sequelize ORM"],
+    items: ["Node.js", "Express", "NestJS", "Fastify", "Python", "REST APIs", "Socket.IO", "Stripe", "Sequelize ORM"],
   },
   { label: "Databases", items: ["PostgreSQL", "MongoDB", "MySQL", "Oracle", "Redis"] },
   {
