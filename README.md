@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Jaya Suriyan R: portfolio
 
-## Getting Started
+Personal portfolio site built with Next.js 14 (App Router), TypeScript and Tailwind CSS. It's a single page with About, Experience, Projects, Skills, Education & certifications, and Contact sections, plus a working contact form.
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # optional: only needed for the contact form
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts: `npm run build`, `npm start`, `npm run lint`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Editing content
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+All text lives in [`src/data/profile.ts`](src/data/profile.ts): profile, experience, projects, skills, education and certifications. Change that file and the site updates. No component changes are needed.
 
-## Learn More
+- **Projects:** set `featured: true` on a project to show it as the large card. Add a `pipeline` array to draw its step diagram.
+- **Email:** `profile.email` is shown on the page. Set it to `""` to hide it.
 
-To learn more about Next.js, take a look at the following resources:
+## Contact form
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The form posts to `/api/contact` ([`src/app/api/contact/route.ts`](src/app/api/contact/route.ts)), which:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- validates the name, email and message
+- drops bot submissions caught by a hidden honeypot field
+- limits each IP to 5 messages per 10 minutes
+- delivers each message by email through [Resend](https://resend.com), with the sender's address as reply-to
 
-## Deploy on Vercel
+To turn it on, set these variables in `.env.local` and in your hosting provider:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Purpose |
+| --- | --- |
+| `RESEND_API_KEY` | API key from the Resend dashboard |
+| `CONTACT_TO_EMAIL` | Inbox that receives messages |
+| `CONTACT_FROM_EMAIL` | Optional sender on a domain verified in Resend. Without it, Resend's test sender only delivers to the account owner's address. |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Without these variables, the endpoint returns `503` and the form points visitors to email and LinkedIn instead.
+
+## SEO
+
+- Metadata, Open Graph and Twitter tags are set in [`src/app/layout.tsx`](src/app/layout.tsx).
+- The link-preview image is generated in [`src/app/opengraph-image.tsx`](src/app/opengraph-image.tsx).
+- `sitemap.xml` and `robots.txt` are generated from `src/app/sitemap.ts` and `src/app/robots.ts`.
+- `schema.org/Person` structured data is in [`src/app/page.tsx`](src/app/page.tsx).
+
+Set `NEXT_PUBLIC_SITE_URL` to the production URL so canonical links and previews point to the right domain.
+
+## Deploy
+
+On Vercel, import the repository, add the environment variables above, and deploy. Vercel detects Next.js automatically and needs no other settings.
